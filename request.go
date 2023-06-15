@@ -2,8 +2,8 @@ package requestsnippet
 
 import (
 	"io"
-	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 type GenericResponse struct {
@@ -22,14 +22,20 @@ type Header struct {
 	Value string
 }
 
-func Request(method string, endpoint string, body io.Reader, headers []Header) (*GenericResponse, error) {
+type Request struct {
+	Method  string
+	URI     string
+	Body    io.Reader
+	Headers []Header
+}
 
-	request, err := http.NewRequest(method, endpoint, body)
+func (req *Request) Call() (*GenericResponse, error) {
+	request, err := http.NewRequest(strings.ToUpper(req.Method), req.URI, req.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, slice := range headers {
+	for _, slice := range req.Headers {
 		request.Header.Set(slice.Key, slice.Value)
 	}
 
@@ -40,7 +46,7 @@ func Request(method string, endpoint string, body io.Reader, headers []Header) (
 
 	defer response.Body.Close()
 
-	responsePayload, err := ioutil.ReadAll(response.Body)
+	responsePayload, err := io.ReadAll(response.Body)
 	if err != nil {
 		return nil, err
 	}
