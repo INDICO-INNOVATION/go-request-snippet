@@ -1,6 +1,8 @@
 package requestsnippet
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"io"
 	"net/http"
 	"strings"
@@ -27,6 +29,7 @@ type Request struct {
 	URI     string
 	Body    io.Reader
 	Headers []Header
+	SkipTLS bool
 }
 
 func (req *Request) Call() (*GenericResponse, error) {
@@ -39,7 +42,21 @@ func (req *Request) Call() (*GenericResponse, error) {
 		request.Header.Set(slice.Key, slice.Value)
 	}
 
-	response, err := http.DefaultClient.Do(request)
+	caCertPool, err := x509.SystemCertPool()
+	if err != nil {
+		return nil, err
+	}
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				RootCAs:            caCertPool,
+				InsecureSkipVerify: req.SkipTLS,
+			},
+		},
+	}
+
+	response, err := client.Do(request)
 	if err != nil {
 		return nil, err
 	}

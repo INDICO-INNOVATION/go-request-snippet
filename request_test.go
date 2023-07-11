@@ -5,9 +5,18 @@ import (
 )
 
 func TestRequest(t *testing.T) {
-	response, err := Request("GET", "https://google.com", nil, nil)
-	if err != nil {
-		t.Fatalf("Error on request")
+	request := &Request{
+		Method:  "GET",
+		URI:     "https://dog.ceo/api/breeds/image/random",
+		Body:    nil,
+		Headers: nil,
+		SkipTLS: true,
 	}
-	t.Log(response)
+
+	response, err := request.Call()
+	if err != nil {
+		t.Fatalf("Error on request: %s", err.Error())
+	}
+
+	t.Log(string(response.Message))
 }
