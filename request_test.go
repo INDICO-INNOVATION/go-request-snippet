@@ -5,7 +5,14 @@ import (
 )
 
 func TestRequest(t *testing.T) {
-	response, err := Request("GET", "https://google.com", nil, nil)
+	request := &Request{
+		Method:  "GET",
+		URI:     "https://google.com",
+		Body:    nil,
+		Headers: nil,
+	}
+
+	response, err := request.Call()
 	if err != nil {
 		t.Fatalf("Error on request")
 	}
